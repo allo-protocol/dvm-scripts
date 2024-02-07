@@ -141,15 +141,7 @@ async function main() {
           managers: [],
         };
 
-        const poolTxData = allo.createPool({
-          profileId: poolData.profileId,
-          strategy: "0xD13ec67938B5E9Cb05A05D8e160daF02Ed5ea9C9",
-          initStrategyData: initializeData,
-          token: poolData.token,
-          amount: poolData.amount,
-          metadata: poolData.metadata,
-          managers: poolData.managers,
-        });
+        const poolTxData = allo.createPool(poolData);
 
         const poolHash = await walletClient.sendTransaction({
           account,
