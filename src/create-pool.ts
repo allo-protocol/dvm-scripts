@@ -20,7 +20,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { decodeEventFromReceipt } from "./utils";
 
 dotenv.config();
-const now = Math.floor(Date.now() / 1000);
+const now = Math.floor(new Date().getTime() / 1000);
 const minutes = (n: number) => n * 60;
 
 // ================= Config ==================
@@ -34,7 +34,7 @@ const initData: dv.InitializeData = {
   registrationStartTime: BigInt(now + minutes(50)), // in seconds, must be in future
   registrationEndTime: BigInt(now + minutes(220)), // in seconds, must be after registrationStartTime
   allocationStartTime: BigInt(now + minutes(60)), // in seconds, must be after registrationStartTime
-  allocationEndTime: BigInt(now + minutes(225)), // in seconds, must be after allocationStartTime
+  allocationEndTime: BigInt(now + minutes(325)), // in seconds, must be after allocationStartTime
   allowedTokens: [ZERO_ADDRESS], // allow all tokens
 };
 
@@ -111,22 +111,19 @@ async function main() {
         });
 
         // const deployParams = strategy.getDeployParams("Direct");
-
         // const hash = await walletClient.deployContract({
         //   abi: deployParams.abi as unknown as Abi,
         //   account,
         //   bytecode: deployParams.bytecode,
         // });
-
         // const receipt = await client.waitForTransactionReceipt({ hash });
-
         // console.log("Deployed strategy at:", receipt.contractAddress);
 
         console.log("Creating pool...");
 
         const initializeData = await strategy.getInitializeData(initData);
 
-        const poolData: CreatePoolArgs = {
+        const createPoolArgs: CreatePoolArgs = {
           profileId:
             "0xdc2fcd785aa9dbcbe7dba80f59cb0ed9a77018018abbc71c4d718c439b4fae93", // created using create-profile.ts
           strategy: "0xD13ec67938B5E9Cb05A05D8e160daF02Ed5ea9C9",
@@ -138,10 +135,10 @@ async function main() {
             pointer:
               "bafkreia45cpoutbvd6vdoffz724bpydyjgc3ercz674i7ivixelgzf4vpy", // IPFS CID
           },
-          managers: [],
+          managers: ["0x8C180840fcBb90CE8464B4eCd12ab0f840c6647C"],
         };
 
-        const poolTxData = allo.createPool(poolData);
+        const poolTxData = allo.createPool(createPoolArgs);
 
         const poolHash = await walletClient.sendTransaction({
           account,
