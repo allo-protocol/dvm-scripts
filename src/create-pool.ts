@@ -2,6 +2,7 @@ import * as dotenv from "dotenv";
 import readline from "readline";
 import {
   Allo,
+  CreatePoolArgs,
   DonationVotingMerkleDistributionDirectTransferStrategyAbi,
   DonationVotingMerkleDistributionStrategy,
   NATIVE,
@@ -32,22 +33,15 @@ const initData: dv.InitializeData = {
   metadataRequired: true,
   registrationStartTime: BigInt(now + minutes(50)), // in seconds, must be in future
   registrationEndTime: BigInt(now + minutes(220)), // in seconds, must be after registrationStartTime
-  allocationStartTime: BigInt(now + minutes(50)), // in seconds, must be after registrationStartTime
+  allocationStartTime: BigInt(now + minutes(60)), // in seconds, must be after registrationStartTime
   allocationEndTime: BigInt(now + minutes(225)), // in seconds, must be after allocationStartTime
   allowedTokens: [ZERO_ADDRESS], // allow all tokens
 };
 
-const poolData = {
-  profileId:
-    "0xbc52a82d1d307c85455c40fd2761d13a45f960cc2935a55fd8986cf710687920", // created using create-profile.ts
-  token: NATIVE, // pool token (match token)
-  amount: BigInt(0), // match amount
-  metadata: {
-    protocol: BigInt(1), // 0 = NONE, 1 = IPFS
-    pointer: "bafkreia45cpoutbvd6vdoffz724bpydyjgc3ercz674i7ivixelgzf4vpy", // IPFS CID
-  },
-  managers: [],
-};
+const strategy = new DonationVotingMerkleDistributionStrategy({
+  chain: chainId,
+  rpc,
+});
 
 // ================== /Config ==================
 
@@ -89,7 +83,7 @@ async function main() {
   });
 
   const account = privateKeyToAccount(
-    process.env.SIGNER_PRIVATE_KEY as `0x${string}`,
+    process.env.SIGNER_PRIVATE_KEY as `0x${string}`
   );
 
   console.log("Creating pool with:");
@@ -101,10 +95,10 @@ async function main() {
   console.log("\tAllocationStartTime:", initData.allocationStartTime);
   console.log("\tAllocationEndTime:", initData.allocationEndTime);
   console.log("");
-  console.log("\tProfile ID:", poolData.profileId);
-  console.log("\tToken:", poolData.token);
-  console.log("\tMetadata:", poolData.metadata);
-  console.log("\tManagers:", poolData.managers);
+  // console.log("\tProfile ID:", poolData.profileId);
+  // console.log("\tToken:", poolData.token);
+  // console.log("\tMetadata:", poolData.metadata);
+  // console.log("\tManagers:", poolData.managers);
   console.log("");
 
   rl.question(
@@ -112,11 +106,6 @@ async function main() {
     async (answer) => {
       if (answer.toLowerCase() === "y") {
         const allo = new Allo({
-          chain: chainId,
-          rpc,
-        });
-
-        const strategy = new DonationVotingMerkleDistributionStrategy({
           chain: chainId,
           rpc,
         });
@@ -136,6 +125,21 @@ async function main() {
         console.log("Creating pool...");
 
         const initializeData = await strategy.getInitializeData(initData);
+
+        const poolData: CreatePoolArgs = {
+          profileId:
+            "0xdc2fcd785aa9dbcbe7dba80f59cb0ed9a77018018abbc71c4d718c439b4fae93", // created using create-profile.ts
+          strategy: "0xD13ec67938B5E9Cb05A05D8e160daF02Ed5ea9C9",
+          initStrategyData: initializeData,
+          token: NATIVE, // pool token (match token)
+          amount: BigInt(0), // match amount
+          metadata: {
+            protocol: BigInt(1), // 0 = NONE, 1 = IPFS
+            pointer:
+              "bafkreia45cpoutbvd6vdoffz724bpydyjgc3ercz674i7ivixelgzf4vpy", // IPFS CID
+          },
+          managers: [],
+        };
 
         const poolTxData = allo.createPool({
           profileId: poolData.profileId,
@@ -171,7 +175,7 @@ async function main() {
       }
 
       rl.close();
-    },
+    }
   );
 }
 
