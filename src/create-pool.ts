@@ -20,23 +20,19 @@ import { privateKeyToAccount } from "viem/accounts";
 import { decodeEventFromReceipt } from "./utils";
 
 dotenv.config();
+
 const now = Math.floor(new Date().getTime() / 1000);
 const minutes = (n: number) => n * 60;
+
+const regStartDateInSeconds = now + minutes(30);
+const regEndDateInSeconds = now + minutes(60);
+const alloStartDateInSeconds = now + minutes(90);
+const alloEndDateInSeconds = now + minutes(120);
 
 // ================= Config ==================
 
 const chainId = Number(process.env.CHAIN_ID);
 const rpc = process.env.RPC_URL as string;
-
-const initData: dv.InitializeData = {
-  useRegistryAnchor: true,
-  metadataRequired: true,
-  registrationStartTime: BigInt(now + minutes(50)), // in seconds, must be in future
-  registrationEndTime: BigInt(now + minutes(220)), // in seconds, must be after registrationStartTime
-  allocationStartTime: BigInt(now + minutes(60)), // in seconds, must be after registrationStartTime
-  allocationEndTime: BigInt(now + minutes(325)), // in seconds, must be after allocationStartTime
-  allowedTokens: [ZERO_ADDRESS], // allow all tokens
-};
 
 const strategy = new DonationVotingMerkleDistributionStrategy({
   chain: chainId,
@@ -86,6 +82,17 @@ async function main() {
     process.env.SIGNER_PRIVATE_KEY as `0x${string}`
   );
 
+  // Set up initialize data typed from SDK
+  const initData: dv.InitializeData = {
+    useRegistryAnchor: true,
+    metadataRequired: true,
+    registrationStartTime: BigInt(regStartDateInSeconds), // in seconds, must be in future
+    registrationEndTime: BigInt(regEndDateInSeconds), // in seconds, must be after registrationStartTime
+    allocationStartTime: BigInt(alloStartDateInSeconds), // in seconds, must be after registrationStartTime
+    allocationEndTime: BigInt(alloEndDateInSeconds), // in seconds, must be after allocationStartTime
+    allowedTokens: [ZERO_ADDRESS], // allow all tokens
+  };
+
   console.log("Creating pool with:");
 
   console.log("\tUseRegistryAnchor:", initData.useRegistryAnchor);
@@ -125,11 +132,11 @@ async function main() {
 
         const createPoolArgs: CreatePoolArgs = {
           profileId:
-            "0xdc2fcd785aa9dbcbe7dba80f59cb0ed9a77018018abbc71c4d718c439b4fae93", // created using create-profile.ts
+            "0x09132b33efb9c64286494976c25a806163606e96e52813f29266ef3597c4ce86", // created using create-profile.ts
           strategy: "0xD13ec67938B5E9Cb05A05D8e160daF02Ed5ea9C9",
           initStrategyData: initializeData,
           token: NATIVE, // pool token (match token)
-          amount: BigInt(0), // match amount
+          amount: BigInt(1e0) as bigint, // match amount
           metadata: {
             protocol: BigInt(1), // 0 = NONE, 1 = IPFS
             pointer:
@@ -137,6 +144,8 @@ async function main() {
           },
           managers: ["0x8C180840fcBb90CE8464B4eCd12ab0f840c6647C"],
         };
+
+        console.log("Create Pool Args:", createPoolArgs);
 
         const poolTxData = allo.createPool(createPoolArgs);
 
