@@ -9,9 +9,9 @@ import { Status } from "@allo-team/allo-v2-sdk/dist/types";
 dotenv.config();
 
 // ================== Config ==================
-const chainId = 5;
-const poolId = 141;
-const strategy = "0xc944eE998b6793Fa7511605A0577e245B1EEBc5a";
+const chainId = 11155420;
+const poolId = 13;
+const strategy = "0xD13ec67938B5E9Cb05A05D8e160daF02Ed5ea9C9";
 const profiles = [
   {
     recipientId: "0xEcaa82aa6E2E3d41fECF6eA6D8eEec654e4F0527",

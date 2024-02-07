@@ -3,14 +3,16 @@ import { ethers } from "ethers";
 import registry from "../abi/Registry.json";
 import readline from "readline";
 import { Registry, SQFSuperFluidStrategy } from "@allo-team/allo-v2-sdk";
+import { createPublicClient, http, createWalletClient } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
+import { chain } from "./create-pool";
 
 dotenv.config();
 
 const randomNonce = Math.floor(Math.random() * 100000000 - 100000) + 100000;
 
 // ================== Config ==================
-const chainId = 5;
-const poolId = 141;
+const poolId = 13;
 const profiles = [
   {
     nonce: randomNonce + 10000000021,
@@ -48,6 +50,9 @@ const profiles = [
 const recipients: { recipientId: `0x${string}` | string; accepted: boolean }[] =
   [];
 
+const chainId = Number(process.env.CHAIN_ID);
+const rpc = process.env.RPC_URL as string;
+
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
@@ -56,18 +61,22 @@ const rl = readline.createInterface({
 async function main() {
   // Wait 10 blocks for re-org protection
   const provider = new ethers.providers.JsonRpcProvider(
-    process.env.RPC_URL as string,
+    process.env.RPC_URL as string
   );
 
   const signer = new ethers.Wallet(
     process.env.SIGNER_PRIVATE_KEY as string,
-    provider,
+    provider
+  );
+
+  const account = privateKeyToAccount(
+    process.env.SIGNER_PRIVATE_KEY as `0x${string}`
   );
 
   const registryContract = new ethers.Contract(
     process.env.ALLO_REGISTRY_ADDRESS as string,
     registry.abi,
-    signer,
+    signer
   );
 
   const owner = signer.address;
@@ -93,7 +102,7 @@ async function main() {
               name,
               metadata,
               owner,
-              members,
+              members
             );
 
           console.log("Create Profile:", staticCallResult.toString());
@@ -103,7 +112,7 @@ async function main() {
             name,
             metadata,
             owner,
-            members,
+            members
           );
 
           console.log("Waiting for confirmation...");
@@ -111,12 +120,14 @@ async function main() {
           await createTx.wait();
 
           console.log(
-            `\x1b[32mProfile successfully created: ${staticCallResult.toString()}\x1b[0m`,
+            `\x1b[32mProfile successfully created: ${staticCallResult.toString()}\x1b[0m`
           );
 
           console.log("Creating dummy recipients...");
 
-          const pr = await registryInstance.getProfileById(staticCallResult);
+          const pr = await registryInstance.getProfileById(
+            staticCallResult.toString()
+          );
 
           const registerArgs = await sqfStrategy.getRegisterRecipientData({
             registryAnchor: pr.anchor as `0x${string}`,
@@ -152,7 +163,7 @@ async function main() {
       }
 
       rl.close();
-    },
+    }
   );
 }
 

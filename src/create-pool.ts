@@ -132,7 +132,7 @@ async function main() {
 
         const createPoolArgs: CreatePoolArgs = {
           profileId:
-            "0xbc52a82d1d307c85455c40fd2761d13a45f960cc2935a55fd8986cf710687920", // created using create-profile.ts
+            "0x3df47d6ad73f128b2f02e38602d2aabe9189f27780c176406e3009955ef3c2a3", // created using create-profile.ts
           strategy: "0xD13ec67938B5E9Cb05A05D8e160daF02Ed5ea9C9",
           initStrategyData: initializeData,
           token: NATIVE, // pool token (match token)
