@@ -24,22 +24,22 @@ const minutes = (n: number) => n * 60;
 
 // ================= Config ==================
 
-const chainId = 31337;
+const chainId = Number(process.env.CHAIN_ID);
 const rpc = process.env.RPC_URL as string;
 
 const initData: dv.InitializeData = {
   useRegistryAnchor: true,
   metadataRequired: true,
-  registrationStartTime: BigInt(now + minutes(5)), // in seconds, must be in future
+  registrationStartTime: BigInt(now + minutes(50)), // in seconds, must be in future
   registrationEndTime: BigInt(now + minutes(220)), // in seconds, must be after registrationStartTime
-  allocationStartTime: BigInt(now + minutes(5)), // in seconds, must be after registrationStartTime
+  allocationStartTime: BigInt(now + minutes(50)), // in seconds, must be after registrationStartTime
   allocationEndTime: BigInt(now + minutes(225)), // in seconds, must be after allocationStartTime
   allowedTokens: [ZERO_ADDRESS], // allow all tokens
 };
 
 const poolData = {
   profileId:
-    "0x912737c49772a2a65a59e9a6c8dae568fe5026a7bf9d665b9b41b775a3a2510a", // created using create-profile.ts
+    "0xbc52a82d1d307c85455c40fd2761d13a45f960cc2935a55fd8986cf710687920", // created using create-profile.ts
   token: NATIVE, // pool token (match token)
   amount: BigInt(0), // match amount
   metadata: {
@@ -121,25 +121,25 @@ async function main() {
           rpc,
         });
 
-        const deployParams = strategy.getDeployParams("Direct");
+        // const deployParams = strategy.getDeployParams("Direct");
 
-        const hash = await walletClient.deployContract({
-          abi: deployParams.abi as unknown as Abi,
-          account,
-          bytecode: deployParams.bytecode,
-        });
+        // const hash = await walletClient.deployContract({
+        //   abi: deployParams.abi as unknown as Abi,
+        //   account,
+        //   bytecode: deployParams.bytecode,
+        // });
 
-        const receipt = await client.waitForTransactionReceipt({ hash });
+        // const receipt = await client.waitForTransactionReceipt({ hash });
 
-        console.log("Deployed strategy at:", receipt.contractAddress);
+        // console.log("Deployed strategy at:", receipt.contractAddress);
 
         console.log("Creating pool...");
 
         const initializeData = await strategy.getInitializeData(initData);
 
-        const poolTxData = allo.createPoolWithCustomStrategy({
+        const poolTxData = allo.createPool({
           profileId: poolData.profileId,
-          strategy: receipt.contractAddress,
+          strategy: "0xD13ec67938B5E9Cb05A05D8e160daF02Ed5ea9C9",
           initStrategyData: initializeData,
           token: poolData.token,
           amount: poolData.amount,

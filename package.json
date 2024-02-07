@@ -21,7 +21,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@allo-team/allo-v2-sdk": "^1.0.43",
+    "@allo-team/allo-v2-sdk": "^1.0.45",
     "abitype": "^1.0.0",
     "ethers": "5.7.2",
     "viem": "^1.19.11",
