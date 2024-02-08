@@ -28,7 +28,7 @@ To create a pool on Allo you need a Registry profile. If you don't have one yet,
 - save and run:
 
 ```shell
-yarn create-profile
+yarn run create-profile
 ```
 
 2. Create a pool
