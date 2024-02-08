@@ -4,13 +4,8 @@ Strategy can be found [here](https://github.com/allo-protocol/allo-v2/tree/main/
 
 ## Installation
 
-1. Clone the repository:
 
-```bash
-git clone git@github.com:allo-protocol/sqf-scripts.git
-```
-
-2. Install dependencies:
+1. Install dependencies:
 
 ```bash
 yarn install
@@ -36,15 +31,9 @@ To create a pool on Allo you need a Registry profile. If you don't have one yet,
 yarn create-profile
 ```
 
-2. Deploy the strategy.
-
-```shell
-yarn deploy-strategy
-```
-
-3. Create a pool
+2. Create a pool
 - Open `src/create-pool.ts`
-- Fill out the `initData` and `poolData` config params (lines 8-35)
+- Fill out the `initData` and `poolData` config params
 - save and run:
   
 ```shell
