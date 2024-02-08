@@ -3,9 +3,7 @@ import { ethers } from "ethers";
 import registry from "../abi/Registry.json";
 import readline from "readline";
 import { Registry, SQFSuperFluidStrategy } from "@allo-team/allo-v2-sdk";
-import { createPublicClient, http, createWalletClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { chain } from "./create-pool";
 
 dotenv.config();
 

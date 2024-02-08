@@ -2,8 +2,8 @@ import * as dotenv from "dotenv";
 import readline from "readline";
 import {
   Allo,
+  AlloAbi,
   CreatePoolArgs,
-  DonationVotingMerkleDistributionDirectTransferStrategyAbi,
   DonationVotingMerkleDistributionStrategy,
   NATIVE,
   ZERO_ADDRESS,
@@ -21,16 +21,6 @@ import { decodeEventFromReceipt } from "./utils";
 
 dotenv.config();
 
-const now = Math.floor(new Date().getTime() / 1000);
-const minutes = (n: number) => n * 60;
-
-const regStartDateInSeconds = now + minutes(30);
-const regEndDateInSeconds = now + minutes(60);
-const alloStartDateInSeconds = now + minutes(90);
-const alloEndDateInSeconds = now + minutes(120);
-
-// ================= Config ==================
-
 const chainId = Number(process.env.CHAIN_ID);
 const rpc = process.env.RPC_URL as string;
 
@@ -38,6 +28,26 @@ const strategy = new DonationVotingMerkleDistributionStrategy({
   chain: chainId,
   rpc,
 });
+
+// ================= Config ==================
+
+const profileId = "0x3df47d6ad73f128b2f02e38602d2aabe9189f27780c176406e3009955ef3c2a3";
+const strategyAddress = "0xD13ec67938B5E9Cb05A05D8e160daF02Ed5ea9C9";
+const amount = BigInt(0) as bigint;
+const poolMetadata = {
+  protocol: BigInt(1), // 0 = NONE, 1 = IPFS
+  pointer: "bafkreia45cpoutbvd6vdoffz724bpydyjgc3ercz674i7ivixelgzf4vpy", // IPFS CID
+};
+const poolToken = NATIVE;
+const managers = ["0x8C180840fcBb90CE8464B4eCd12ab0f840c6647C"]
+
+const now = Math.floor(new Date().getTime() / 1000);
+const minutes = (n: number) => n * 60;
+
+const regStartDateInSeconds = now + minutes(30);
+const regEndDateInSeconds = now + minutes(60);
+const alloStartDateInSeconds = now + minutes(90);
+const alloEndDateInSeconds = now + minutes(120);
 
 // ================== /Config ==================
 
@@ -93,20 +103,17 @@ async function main() {
     allowedTokens: [ZERO_ADDRESS], // allow all tokens
   };
 
-  console.log("Creating pool with:");
+  console.log("========================")
 
+  console.log("Creating pool with the following parameters:");
   console.log("\tUseRegistryAnchor:", initData.useRegistryAnchor);
   console.log("\tMetadataRequired:", initData.metadataRequired);
   console.log("\tRegistrationStartTime:", initData.registrationStartTime);
   console.log("\tRegistrationEndTime:", initData.registrationEndTime);
   console.log("\tAllocationStartTime:", initData.allocationStartTime);
   console.log("\tAllocationEndTime:", initData.allocationEndTime);
-  console.log("");
-  // console.log("\tProfile ID:", poolData.profileId);
-  // console.log("\tToken:", poolData.token);
-  // console.log("\tMetadata:", poolData.metadata);
-  // console.log("\tManagers:", poolData.managers);
-  console.log("");
+
+  console.log("========================")
 
   rl.question(
     `Do you want to proceed with address ${account.address}? (y/n): `,
@@ -117,35 +124,19 @@ async function main() {
           rpc,
         });
 
-        // const deployParams = strategy.getDeployParams("Direct");
-        // const hash = await walletClient.deployContract({
-        //   abi: deployParams.abi as unknown as Abi,
-        //   account,
-        //   bytecode: deployParams.bytecode,
-        // });
-        // const receipt = await client.waitForTransactionReceipt({ hash });
-        // console.log("Deployed strategy at:", receipt.contractAddress);
-
         console.log("Creating pool...");
 
         const initializeData = await strategy.getInitializeData(initData);
 
         const createPoolArgs: CreatePoolArgs = {
-          profileId:
-            "0x3df47d6ad73f128b2f02e38602d2aabe9189f27780c176406e3009955ef3c2a3", // created using create-profile.ts
-          strategy: "0xD13ec67938B5E9Cb05A05D8e160daF02Ed5ea9C9",
+          profileId: profileId, // created using create-profile.ts
+          strategy: strategyAddress,
           initStrategyData: initializeData,
-          token: NATIVE, // pool token (match token)
-          amount: BigInt(0) as bigint, // match amount
-          metadata: {
-            protocol: BigInt(1), // 0 = NONE, 1 = IPFS
-            pointer:
-              "bafkreia45cpoutbvd6vdoffz724bpydyjgc3ercz674i7ivixelgzf4vpy", // IPFS CID
-          },
-          managers: ["0x8C180840fcBb90CE8464B4eCd12ab0f840c6647C"],
+          token: poolToken,
+          amount: amount, // match amount
+          metadata: poolMetadata,
+          managers: managers,
         };
-
-        console.log("Create Pool Args:", createPoolArgs);
 
         const poolTxData = allo.createPool(createPoolArgs);
 
@@ -160,14 +151,14 @@ async function main() {
           hash: poolHash,
         });
 
-        const poolCreatedEvent = decodeEventFromReceipt({
-          abi: DonationVotingMerkleDistributionDirectTransferStrategyAbi as Abi,
+        const poolCreatedEvent: any = decodeEventFromReceipt({
+          abi: AlloAbi as Abi,
           receipt: poolReceipt,
           event: "PoolCreated",
         });
 
-        console.log("Pool created with");
-        console.log(poolCreatedEvent);
+        console.log("Pool ID", Number(poolCreatedEvent["poolId"]));
+        console.log("Strategy", poolCreatedEvent["strategy"]);
       } else {
         console.log("Exiting script. No further action taken.");
       }
