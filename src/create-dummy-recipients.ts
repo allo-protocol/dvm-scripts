@@ -2,44 +2,66 @@ import * as dotenv from "dotenv";
 import { ethers } from "ethers";
 import registry from "../abi/Registry.json";
 import readline from "readline";
-import { Registry, SQFSuperFluidStrategy } from "@allo-team/allo-v2-sdk";
+import {
+  DonationVotingMerkleDistributionStrategy,
+  Registry,
+  RegistryAbi,
+} from "@allo-team/allo-v2-sdk";
 import { privateKeyToAccount } from "viem/accounts";
+import {
+  createPublicClient,
+  http,
+  createWalletClient,
+  defineChain,
+  Abi,
+} from "viem";
+import { decodeEventFromReceipt } from "./utils";
 
 dotenv.config();
 
 const randomNonce = Math.floor(Math.random() * 100000000 - 100000) + 100000;
+const chainId = Number(process.env.CHAIN_ID);
+const rpc = process.env.RPC_URL as string;
+const chain = defineChain({
+  id: chainId,
+  name: "Development 1",
+  network: "dev1",
+  nativeCurrency: {
+    decimals: 18,
+    name: "Ether",
+    symbol: "ETH",
+  },
+  rpcUrls: {
+    default: { http: [rpc] },
+    public: { http: [rpc] },
+  },
+  blockExplorers: {
+    default: {
+      name: "dev1",
+      url: "",
+    },
+  },
+});
 
 // ================== Config ==================
-const poolId = 13;
+const poolId = 7;
 const profiles = [
   {
     nonce: randomNonce + 10000000021,
     name: "Test Profile 1",
-    metadata: [0, "Test Metadata"], // 0 = NO PROTOCOL, 1 = IPFS
-    members: [],
-  },
-  {
-    nonce: randomNonce + 10000000022,
-    name: "Test Profile 2",
-    metadata: [0, "Test Metadata"], // 0 = NO PROTOCOL, 1 = IPFS
+    metadata: {
+      protocol: BigInt(1),
+      pointer: "bafkreif3wuuv4wqp4i5tfwlrnyogtujmhnn6jmoihr5yekaydhsaw2x6oy",
+    }, // 0 = NO PROTOCOL, 1 = IPFS
     members: [],
   },
   // {
-  //   nonce: randomNonce + 10000000023,
-  //   name: "Test Profile 3",
-  //   metadata: [0, "Test Metadata"], // 0 = NO PROTOCOL, 1 = IPFS
-  //   members: [],
-  // },
-  // {
-  //   nonce: randomNonce + 10000000024,
-  //   name: "Test Profile 4",
-  //   metadata: [0, "Test Metadata"], // 0 = NO PROTOCOL, 1 = IPFS
-  //   members: [],
-  // },
-  // {
-  //   nonce: randomNonce + 10000000025,
-  //   name: "Test Profile 5",
-  //   metadata: [0, "Test Metadata"], // 0 = NO PROTOCOL, 1 = IPFS
+  //   nonce: randomNonce + 10000000022,
+  //   name: "Test Profile 2",
+  //   metadata: {
+  //     protocol: BigInt(1),
+  //     pointer: "bafkreiakgpfq3psade5hmcnk3nrls7eame5yma4n6yfh6d3bvqwqke4rry",
+  //   }, // 0 = NO PROTOCOL, 1 = IPFS
   //   members: [],
   // },
 ];
@@ -48,107 +70,132 @@ const profiles = [
 const recipients: { recipientId: `0x${string}` | string; accepted: boolean }[] =
   [];
 
-const chainId = Number(process.env.CHAIN_ID);
-const rpc = process.env.RPC_URL as string;
-
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
 
+const strategy = new DonationVotingMerkleDistributionStrategy({
+  chain: chainId,
+  rpc,
+  poolId,
+});
+
 async function main() {
   // Wait 10 blocks for re-org protection
-  const provider = new ethers.providers.JsonRpcProvider(
-    process.env.RPC_URL as string
-  );
+  const client = createPublicClient({
+    chain,
+    transport: http(rpc),
+  });
 
-  const signer = new ethers.Wallet(
-    process.env.SIGNER_PRIVATE_KEY as string,
-    provider
-  );
+  const walletClient = createWalletClient({
+    chain,
+    transport: http(rpc),
+  });
 
   const account = privateKeyToAccount(
     process.env.SIGNER_PRIVATE_KEY as `0x${string}`
   );
 
-  const registryContract = new ethers.Contract(
-    process.env.ALLO_REGISTRY_ADDRESS as string,
-    registry.abi,
-    signer
-  );
-
-  const owner = signer.address;
+  // const registryContract = new ethers.Contract(
+  //   process.env.ALLO_REGISTRY_ADDRESS as string,
+  //   registry.abi,
+  //   signer
+  // );
 
   const registryInstance = new Registry({
     chain: chainId,
   });
 
-  const sqfStrategy = new SQFSuperFluidStrategy({
-    chain: chainId,
-    poolId: poolId,
-  });
-
   rl.question(
-    `Do you want to proceed with address ${signer.address}? (y/n): `,
+    `Do you want to proceed with address ${account.address}? (y/n): `,
     async (answer) => {
       if (answer.toLowerCase() === "y") {
         for (let i = 0; i < profiles.length; i++) {
           const { nonce, name, metadata, members } = profiles[i];
-          const staticCallResult =
-            await registryContract.callStatic.createProfile(
-              nonce,
-              name,
-              metadata,
-              owner,
-              members
-            );
 
-          console.log("Create Profile:", staticCallResult.toString());
-
-          const createTx = await registryContract.createProfile(
+          console.log("Creating profile with:", {
             nonce,
             name,
             metadata,
-            owner,
-            members
+            members,
+          });
+
+          const registerData = await registryInstance.createProfile({
+            nonce,
+            name,
+            metadata,
+            owner: account.address,
+            members,
+          });
+
+          const txHash = await walletClient.sendTransaction({
+            account,
+            to: registerData.to,
+            data: registerData.data,
+            value: BigInt(registerData.value),
+          });
+
+          const txReceipt = await client.waitForTransactionReceipt({
+            hash: txHash,
+          });
+
+          const profileCreatedEvent: any = decodeEventFromReceipt({
+            abi: RegistryAbi as Abi,
+            receipt: txReceipt,
+            event: "ProfileCreated",
+          });
+
+          const profileId = profileCreatedEvent["profileId"];
+          const anchor = profileCreatedEvent["anchor"];
+
+          console.log("Profile ID 1", profileId);
+          console.log("Anchor 1", anchor);
+
+          // register the recipient
+          const registerRecipientData = strategy.getRegisterRecipientData(
+            {
+              registryAnchor: anchor as `0x${string}`,
+              recipientAddress: account.address,
+              metadata: {
+                protocol: BigInt(1),
+                pointer: "bafkreiakgpfq3psade5hmcnk3nrls7eame5yma4n6yfh6d3bvqwqke4rry",
+              },
+            }
           );
 
-          console.log("Waiting for confirmation...");
+          const registerRecipientTxHash = await walletClient.sendTransaction({
+            account,
+            to: registerRecipientData.to,
+            data: registerRecipientData.data,
+            value: BigInt(registerRecipientData.value),
+          });
 
-          await createTx.wait();
+          console.log("Waiting for confirmation...", registerRecipientTxHash);
+
+          const registerRecipientTxReceipt =
+            await client.waitForTransactionReceipt({
+              hash: registerRecipientTxHash,
+            });
 
           console.log(
-            `\x1b[32mProfile successfully created: ${staticCallResult.toString()}\x1b[0m`
+            "Register recipient receipt: ",
+            registerRecipientTxReceipt
           );
 
-          console.log("Creating dummy recipients...");
-
-          const pr = await registryInstance.getProfileById(
-            staticCallResult.toString()
-          );
-
-          const registerArgs = await sqfStrategy.getRegisterRecipientData({
-            registryAnchor: pr.anchor as `0x${string}`,
-            recipientAddress: owner as `0x${string}`,
-            metadata: {
-              protocol: BigInt(0),
-              pointer: "dummy data",
-            },
+          const recipientRegisteredEvent: any = decodeEventFromReceipt({
+            abi: RegistryAbi as Abi,
+            receipt: registerRecipientTxReceipt,
+            event: "Registered",
           });
 
-          const registerTx = await signer.sendTransaction({
-            to: registerArgs.to,
-            data: registerArgs.data,
-          });
+          console.log("Register recipient event: ", recipientRegisteredEvent);
 
-          console.log("Waiting for confirmation...");
-
-          await registerTx.wait();
-
-          console.log("Dummy recipient created: ", pr.anchor);
+          console.log("Profile ID 2", profileId);
+          console.log("Anchor 2", anchor);
 
           recipients.push({
-            recipientId: pr.anchor,
+            recipientId: anchor,
             accepted: true,
           });
         }

@@ -31,12 +31,12 @@ const strategy = new DonationVotingMerkleDistributionStrategy({
 
 // ================= Config ==================
 
-const profileId = "0x3df47d6ad73f128b2f02e38602d2aabe9189f27780c176406e3009955ef3c2a3";
+const profileId = "0x61d4db78579550c2fb9688b4f472b0fcd0a398175713275ddd46c5c15c463a2f";
 const strategyAddress = "0xD13ec67938B5E9Cb05A05D8e160daF02Ed5ea9C9";
 const amount = BigInt(0) as bigint;
 const poolMetadata = {
   protocol: BigInt(1), // 0 = NONE, 1 = IPFS
-  pointer: "bafkreia45cpoutbvd6vdoffz724bpydyjgc3ercz674i7ivixelgzf4vpy", // IPFS CID
+  pointer: "QmTMmP2sUFjVAcgE4J8bc5NYygSgdqhvsDupivnSregCkT", // IPFS CID
 };
 const poolToken = NATIVE;
 const managers = ["0x8C180840fcBb90CE8464B4eCd12ab0f840c6647C"]
