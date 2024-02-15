@@ -1,6 +1,6 @@
 import * as dotenv from "dotenv";
 import { ethers } from "ethers";
-import registry from "../abi/Registry.json";
+import registry from "../../abi/Registry.json";
 import readline from "readline";
 import {
   DonationVotingMerkleDistributionStrategy,
@@ -15,7 +15,7 @@ import {
   defineChain,
   Abi,
 } from "viem";
-import { decodeEventFromReceipt } from "./utils";
+import { decodeEventFromReceipt } from "../utils";
 
 dotenv.config();
 
@@ -94,7 +94,7 @@ async function main() {
   });
 
   const account = privateKeyToAccount(
-    process.env.SIGNER_PRIVATE_KEY as `0x${string}`
+    process.env.SIGNER_PRIVATE_KEY as `0x${string}`,
   );
 
   // const registryContract = new ethers.Contract(
@@ -153,16 +153,15 @@ async function main() {
           console.log("Anchor 1", anchor);
 
           // register the recipient
-          const registerRecipientData = strategy.getRegisterRecipientData(
-            {
-              registryAnchor: anchor as `0x${string}`,
-              recipientAddress: account.address,
-              metadata: {
-                protocol: BigInt(1),
-                pointer: "bafkreiakgpfq3psade5hmcnk3nrls7eame5yma4n6yfh6d3bvqwqke4rry",
-              },
-            }
-          );
+          const registerRecipientData = strategy.getRegisterRecipientData({
+            registryAnchor: anchor as `0x${string}`,
+            recipientAddress: account.address,
+            metadata: {
+              protocol: BigInt(1),
+              pointer:
+                "bafkreiakgpfq3psade5hmcnk3nrls7eame5yma4n6yfh6d3bvqwqke4rry",
+            },
+          });
 
           const registerRecipientTxHash = await walletClient.sendTransaction({
             account,
@@ -180,7 +179,7 @@ async function main() {
 
           console.log(
             "Register recipient receipt: ",
-            registerRecipientTxReceipt
+            registerRecipientTxReceipt,
           );
 
           const recipientRegisteredEvent: any = decodeEventFromReceipt({
@@ -208,7 +207,7 @@ async function main() {
       }
 
       rl.close();
-    }
+    },
   );
 }
 

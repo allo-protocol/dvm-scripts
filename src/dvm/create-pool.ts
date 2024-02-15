@@ -17,7 +17,7 @@ import {
   http,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { decodeEventFromReceipt } from "./utils";
+import { decodeEventFromReceipt } from "../utils";
 
 dotenv.config();
 
@@ -31,7 +31,8 @@ const strategy = new DonationVotingMerkleDistributionStrategy({
 
 // ================= Config ==================
 
-const profileId = "0x61d4db78579550c2fb9688b4f472b0fcd0a398175713275ddd46c5c15c463a2f";
+const profileId =
+  "0x33522ed4f73f527577cf5da088d4d6d62e301b958d478f416179ec93548b8b1a";
 const strategyAddress = "0xD13ec67938B5E9Cb05A05D8e160daF02Ed5ea9C9";
 const amount = BigInt(0) as bigint;
 const poolMetadata = {
@@ -39,7 +40,7 @@ const poolMetadata = {
   pointer: "QmTMmP2sUFjVAcgE4J8bc5NYygSgdqhvsDupivnSregCkT", // IPFS CID
 };
 const poolToken = NATIVE;
-const managers = ["0x8C180840fcBb90CE8464B4eCd12ab0f840c6647C"]
+const managers = ["0x8C180840fcBb90CE8464B4eCd12ab0f840c6647C"];
 
 const now = Math.floor(new Date().getTime() / 1000);
 const minutes = (n: number) => n * 60;
@@ -89,7 +90,7 @@ async function main() {
   });
 
   const account = privateKeyToAccount(
-    process.env.SIGNER_PRIVATE_KEY as `0x${string}`
+    process.env.SIGNER_PRIVATE_KEY as `0x${string}`,
   );
 
   // Set up initialize data typed from SDK
@@ -103,7 +104,7 @@ async function main() {
     allowedTokens: [ZERO_ADDRESS], // allow all tokens
   };
 
-  console.log("========================")
+  console.log("========================");
 
   console.log("Creating pool with the following parameters:");
   console.log("\tUseRegistryAnchor:", initData.useRegistryAnchor);
@@ -113,7 +114,7 @@ async function main() {
   console.log("\tAllocationStartTime:", initData.allocationStartTime);
   console.log("\tAllocationEndTime:", initData.allocationEndTime);
 
-  console.log("========================")
+  console.log("========================");
 
   rl.question(
     `Do you want to proceed with address ${account.address}? (y/n): `,
@@ -164,7 +165,7 @@ async function main() {
       }
 
       rl.close();
-    }
+    },
   );
 }
 

@@ -5,11 +5,9 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "deploy-strategy": "pnpm build && node ./dist/src/deploy-strategy.js",
-    "create-pool": "pnpm build && node ./dist/src/create-pool.js",
-    "create-profile": "pnpm build && node ./dist/src/create-profile.js",
-    "create-dummy-recipients": "pnpm build && node ./dist/src/create-dummy-recipients.js",
-    "review-recipients": "pnpm build && node ./dist/src/review-recipients.js"
+    "create-pool:dvm": "pnpm build && node ./dist/src/dvm/create-pool.js",
+    "create-pool:gg": "pnpm build && node ./dist/src/gs/create-pool.js",
+    "create-profile": "pnpm build && node ./dist/src/create-profile.js"
   },
   "keywords": [],
   "author": "",
