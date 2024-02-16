@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "create-pool:dvm": "pnpm build && node ./dist/src/dvm/create-pool.js",
-    "create-pool:gg": "pnpm build && node ./dist/src/gs/create-pool.js",
+    "create-pool:dg": "pnpm build && node ./dist/src/dg/create-pool.js",
     "create-profile": "pnpm build && node ./dist/src/create-profile.js"
   },
   "keywords": [],
@@ -19,7 +19,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@allo-team/allo-v2-sdk": "^1.0.48",
+    "@allo-team/allo-v2-sdk": "^1.0.49",
     "abitype": "^1.0.0",
     "ethers": "5.7.2",
     "viem": "^1.19.11",
