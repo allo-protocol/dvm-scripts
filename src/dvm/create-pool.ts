@@ -32,12 +32,12 @@ const strategy = new DonationVotingMerkleDistributionStrategy({
 // ================= Config ==================
 
 const profileId =
-  "0x33522ed4f73f527577cf5da088d4d6d62e301b958d478f416179ec93548b8b1a";
-const strategyAddress = "0xD13ec67938B5E9Cb05A05D8e160daF02Ed5ea9C9";
+  "0x8c5b2a2eb2a9c0066653b8f6de2256728b945561e717c0b0e2e4542b7fdd83d2";
+const strategyAddress = "0x2f9920e473E30E54bD9D56F571BcebC2470A37B0";
 const amount = BigInt(0) as bigint;
 const poolMetadata = {
   protocol: BigInt(1), // 0 = NONE, 1 = IPFS
-  pointer: "QmTMmP2sUFjVAcgE4J8bc5NYygSgdqhvsDupivnSregCkT", // IPFS CID
+  pointer: "QmdvUsxQebfrZfGKbQgj6p9FXeVX2qGcaAH9uCqHC3KALP", // IPFS CID
 };
 const poolToken = NATIVE;
 const managers = ["0x8C180840fcBb90CE8464B4eCd12ab0f840c6647C"];
@@ -45,10 +45,10 @@ const managers = ["0x8C180840fcBb90CE8464B4eCd12ab0f840c6647C"];
 const now = Math.floor(new Date().getTime() / 1000);
 const minutes = (n: number) => n * 60;
 
-const regStartDateInSeconds = now + minutes(30);
-const regEndDateInSeconds = now + minutes(60);
+const regStartDateInSeconds = now + minutes(3);
+const regEndDateInSeconds = now + minutes(24 * 7 * 60);
 const alloStartDateInSeconds = now + minutes(90);
-const alloEndDateInSeconds = now + minutes(120);
+const alloEndDateInSeconds = now + minutes(24 * 7 * 120);
 
 // ================== /Config ==================
 
@@ -138,6 +138,8 @@ async function main() {
           metadata: poolMetadata,
           managers: managers,
         };
+
+        console.log("Create Pool Args", createPoolArgs);
 
         const poolTxData = allo.createPool(createPoolArgs);
 

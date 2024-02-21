@@ -36,7 +36,7 @@ const strategyAddress = "0xaC3f288a7A3efA3D33d9Dd321ad31072915D155d";
 const amount = BigInt(0) as bigint;
 const poolMetadata = {
   protocol: BigInt(1), // 0 = NONE, 1 = IPFS
-  pointer: "QmdgcYsfUGMaUFLvwMdm4GRquYx6kDrVjjdEdj2upiYSR9", // IPFS CID
+  pointer: "QmaHez3wqMadqBy6m8PKNBFAeNPNJhK7nikjfsdV7zeL2d", // IPFS CID
 };
 const poolToken = NATIVE;
 const managers = ["0x8C180840fcBb90CE8464B4eCd12ab0f840c6647C"];
