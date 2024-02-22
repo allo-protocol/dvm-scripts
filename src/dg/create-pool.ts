@@ -30,8 +30,7 @@ const strategy = new DirectGrantsStrategy({
 
 // ================= Config ==================
 
-const profileId =
-  "0x33522ed4f73f527577cf5da088d4d6d62e301b958d478f416179ec93548b8b1a";
+const profileId = process.env.PROFILE_ID as string;
 const strategyAddress = "0xaC3f288a7A3efA3D33d9Dd321ad31072915D155d";
 const amount = BigInt(0) as bigint;
 const poolMetadata = {
