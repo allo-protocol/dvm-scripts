@@ -5,11 +5,11 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "deploy-strategy": "pnpm build && node ./dist/src/deploy-strategy.js",
-    "create-pool": "pnpm build && node ./dist/src/create-pool.js",
-    "create-profile": "pnpm build && node ./dist/src/create-profile.js",
-    "create-dummy-recipients": "pnpm build && node ./dist/src/create-dummy-recipients.js",
-    "review-recipients": "pnpm build && node ./dist/src/review-recipients.js"
+    "create-pool:dvm": "pnpm build && node ./dist/src/dvm/create-pool.js",
+    "create-dummy-recipients:dvm": "pnpm build && node ./dist/src/dvm/create-dummy-recipients.js",
+    "create-pool:dg": "pnpm build && node ./dist/src/dg/create-pool.js",
+    "create-dummy-recipients:dg": "pnpm build && node ./dist/src/dg/create-dummy-recipients.js",
+    "create-profile": "pnpm build && node ./dist/src/create-profile.js"
   },
   "keywords": [],
   "author": "",
@@ -21,7 +21,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@allo-team/allo-v2-sdk": "^1.0.46",
+    "@allo-team/allo-v2-sdk": "^1.0.51",
     "abitype": "^1.0.0",
     "ethers": "5.7.2",
     "viem": "^1.19.11",

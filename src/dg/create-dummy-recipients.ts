@@ -1,8 +1,9 @@
 import * as dotenv from "dotenv";
-import { ethers } from "ethers";
-import registry from "../abi/Registry.json";
+import registry from "../../abi/Registry.json";
 import readline from "readline";
 import {
+  DirectGrantsStrategy,
+  DirectGrantsStrategyTypes,
   DonationVotingMerkleDistributionStrategy,
   Registry,
   RegistryAbi,
@@ -15,7 +16,7 @@ import {
   defineChain,
   Abi,
 } from "viem";
-import { decodeEventFromReceipt } from "./utils";
+import { decodeEventFromReceipt } from "../utils";
 
 dotenv.config();
 
@@ -44,26 +45,33 @@ const chain = defineChain({
 });
 
 // ================== Config ==================
-const poolId = 7;
+
+const poolId = 24;
 const profiles = [
   {
     nonce: randomNonce + 10000000021,
     name: "Test Profile 1",
     metadata: {
       protocol: BigInt(1),
-      pointer: "bafkreif3wuuv4wqp4i5tfwlrnyogtujmhnn6jmoihr5yekaydhsaw2x6oy",
+      pointer: "bafkreihm4vaz7gnkrsubanncjjmk7n2lal72wwxatsoyw2jzutho5azocm",
     }, // 0 = NO PROTOCOL, 1 = IPFS
     members: [],
+    recipientAddress: "0x",
+    registryAnchor: "0x",
+    grantAmount: 1000000000000000000,
   },
-  // {
-  //   nonce: randomNonce + 10000000022,
-  //   name: "Test Profile 2",
-  //   metadata: {
-  //     protocol: BigInt(1),
-  //     pointer: "bafkreiakgpfq3psade5hmcnk3nrls7eame5yma4n6yfh6d3bvqwqke4rry",
-  //   }, // 0 = NO PROTOCOL, 1 = IPFS
-  //   members: [],
-  // },
+  {
+    nonce: randomNonce + 10000000022,
+    name: "Test Profile 2",
+    metadata: {
+      protocol: BigInt(1),
+      pointer: "bafkreihpvaos7gzdznbbyiclduv34c446tjb3cykpukudcig7gdec3oobq",
+    }, // 0 = NO PROTOCOL, 1 = IPFS
+    members: [],
+    recipientAddress: "0x",
+    registryAnchor: "0x",
+    grantAmount: 1000000000000000000,
+  },
 ];
 // ================== /Config ==================
 
@@ -75,7 +83,7 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-const strategy = new DonationVotingMerkleDistributionStrategy({
+const strategy = new DirectGrantsStrategy({
   chain: chainId,
   rpc,
   poolId,
@@ -94,7 +102,7 @@ async function main() {
   });
 
   const account = privateKeyToAccount(
-    process.env.SIGNER_PRIVATE_KEY as `0x${string}`
+    process.env.SIGNER_PRIVATE_KEY as `0x${string}`,
   );
 
   // const registryContract = new ethers.Contract(
@@ -152,17 +160,18 @@ async function main() {
           console.log("Profile ID 1", profileId);
           console.log("Anchor 1", anchor);
 
+          const poolRegisterData: DirectGrantsStrategyTypes.RegisterData = {
+            registryAnchor: anchor as `0x${string}`,
+            recipientAddress: account.address,
+            grantAmount: BigInt(profiles[i].grantAmount),
+            metadata: {
+              protocol: BigInt(1),
+              pointer: profiles[i].metadata.pointer,
+            },
+          };
           // register the recipient
-          const registerRecipientData = strategy.getRegisterRecipientData(
-            {
-              registryAnchor: anchor as `0x${string}`,
-              recipientAddress: account.address,
-              metadata: {
-                protocol: BigInt(1),
-                pointer: "bafkreiakgpfq3psade5hmcnk3nrls7eame5yma4n6yfh6d3bvqwqke4rry",
-              },
-            }
-          );
+          const registerRecipientData =
+            strategy.getRegisterRecipientData(poolRegisterData);
 
           const registerRecipientTxHash = await walletClient.sendTransaction({
             account,
@@ -180,19 +189,19 @@ async function main() {
 
           console.log(
             "Register recipient receipt: ",
-            registerRecipientTxReceipt
+            registerRecipientTxReceipt,
           );
 
-          const recipientRegisteredEvent: any = decodeEventFromReceipt({
-            abi: RegistryAbi as Abi,
-            receipt: registerRecipientTxReceipt,
-            event: "Registered",
-          });
+          // const recipientRegisteredEvent: any = decodeEventFromReceipt({
+          //   abi: RegistryAbi as Abi,
+          //   receipt: registerRecipientTxReceipt,
+          //   event: "Registered",
+          // });
 
-          console.log("Register recipient event: ", recipientRegisteredEvent);
+          // console.log("Register recipient event: ", recipientRegisteredEvent);
 
-          console.log("Profile ID 2", profileId);
-          console.log("Anchor 2", anchor);
+          // console.log("Profile ID 2", profileId);
+          // console.log("Anchor 2", anchor);
 
           recipients.push({
             recipientId: anchor,
@@ -208,7 +217,7 @@ async function main() {
       }
 
       rl.close();
-    }
+    },
   );
 }
 

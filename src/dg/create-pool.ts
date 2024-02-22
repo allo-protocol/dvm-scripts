@@ -4,10 +4,9 @@ import {
   Allo,
   AlloAbi,
   CreatePoolArgs,
-  DonationVotingMerkleDistributionStrategy,
+  DirectGrantsStrategy,
   NATIVE,
-  ZERO_ADDRESS,
-  DonationVotingMerkleDistributionStrategyTypes as dv,
+  DirectGrantsStrategyTypes as dg,
 } from "@allo-team/allo-v2-sdk";
 import {
   Abi,
@@ -17,38 +16,35 @@ import {
   http,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { decodeEventFromReceipt } from "./utils";
+import { decodeEventFromReceipt } from "../utils";
 
 dotenv.config();
 
 const chainId = Number(process.env.CHAIN_ID);
 const rpc = process.env.RPC_URL as string;
 
-const strategy = new DonationVotingMerkleDistributionStrategy({
+const strategy = new DirectGrantsStrategy({
   chain: chainId,
   rpc,
 });
 
 // ================= Config ==================
 
-const profileId = "0x61d4db78579550c2fb9688b4f472b0fcd0a398175713275ddd46c5c15c463a2f";
-const strategyAddress = "0xD13ec67938B5E9Cb05A05D8e160daF02Ed5ea9C9";
+const profileId = process.env.PROFILE_ID as string;
+const strategyAddress = "0xaC3f288a7A3efA3D33d9Dd321ad31072915D155d";
 const amount = BigInt(0) as bigint;
 const poolMetadata = {
   protocol: BigInt(1), // 0 = NONE, 1 = IPFS
-  pointer: "QmTMmP2sUFjVAcgE4J8bc5NYygSgdqhvsDupivnSregCkT", // IPFS CID
+  pointer: "QmaHez3wqMadqBy6m8PKNBFAeNPNJhK7nikjfsdV7zeL2d", // IPFS CID
 };
 const poolToken = NATIVE;
-const managers = ["0x8C180840fcBb90CE8464B4eCd12ab0f840c6647C"]
+const managers = ["0x8C180840fcBb90CE8464B4eCd12ab0f840c6647C"];
 
-const now = Math.floor(new Date().getTime() / 1000);
-const minutes = (n: number) => n * 60;
-
-const regStartDateInSeconds = now + minutes(30);
-const regEndDateInSeconds = now + minutes(60);
-const alloStartDateInSeconds = now + minutes(90);
-const alloEndDateInSeconds = now + minutes(120);
-
+const initParams: dg.InitializeParams = {
+  registryGating: true,
+  metadataRequired: true,
+  grantAmountRequired: true,
+};
 // ================== /Config ==================
 
 const rl = readline.createInterface({
@@ -89,31 +85,8 @@ async function main() {
   });
 
   const account = privateKeyToAccount(
-    process.env.SIGNER_PRIVATE_KEY as `0x${string}`
+    process.env.SIGNER_PRIVATE_KEY as `0x${string}`,
   );
-
-  // Set up initialize data typed from SDK
-  const initData: dv.InitializeData = {
-    useRegistryAnchor: true,
-    metadataRequired: true,
-    registrationStartTime: BigInt(regStartDateInSeconds), // in seconds, must be in future
-    registrationEndTime: BigInt(regEndDateInSeconds), // in seconds, must be after registrationStartTime
-    allocationStartTime: BigInt(alloStartDateInSeconds), // in seconds, must be after registrationStartTime
-    allocationEndTime: BigInt(alloEndDateInSeconds), // in seconds, must be after allocationStartTime
-    allowedTokens: [ZERO_ADDRESS], // allow all tokens
-  };
-
-  console.log("========================")
-
-  console.log("Creating pool with the following parameters:");
-  console.log("\tUseRegistryAnchor:", initData.useRegistryAnchor);
-  console.log("\tMetadataRequired:", initData.metadataRequired);
-  console.log("\tRegistrationStartTime:", initData.registrationStartTime);
-  console.log("\tRegistrationEndTime:", initData.registrationEndTime);
-  console.log("\tAllocationStartTime:", initData.allocationStartTime);
-  console.log("\tAllocationEndTime:", initData.allocationEndTime);
-
-  console.log("========================")
 
   rl.question(
     `Do you want to proceed with address ${account.address}? (y/n): `,
@@ -126,7 +99,7 @@ async function main() {
 
         console.log("Creating pool...");
 
-        const initializeData = await strategy.getInitializeData(initData);
+        const initializeData = await strategy.getInitializeData(initParams);
 
         const createPoolArgs: CreatePoolArgs = {
           profileId: profileId, // created using create-profile.ts
@@ -164,7 +137,7 @@ async function main() {
       }
 
       rl.close();
-    }
+    },
   );
 }
 

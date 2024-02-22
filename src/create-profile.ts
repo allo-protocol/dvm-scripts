@@ -7,9 +7,10 @@ dotenv.config();
 
 // ================== Config ==================
 const profile = {
-  nonce: 1000040002,
+  nonce: 1000040008,
   name: "Test Profile",
-  metadata: [1, "bafkreia45cpoutbvd6vdoffz724bpydyjgc3ercz674i7ivixelgzf4vpy"], // 0 = NO PROTOCOL, 1 = IPFS
+  // metadata: [1, "bafkreia45cpoutbvd6vdoffz724bpydyjgc3ercz674i7ivixelgzf4vpy"], // 0 = NO PROTOCOL, 1 = IPFS
+  metadata: [1, "QmWsar5uGgTVNXuzPxjZuHizRQ5xRcdH3RWyxTSRux3NLy"],
   members: [],
 };
 // ================== /Config ==================
